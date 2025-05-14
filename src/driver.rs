@@ -2,6 +2,7 @@ use anyhow::Result;
 use std::process::{Command, Child};
 use std::time::Duration;
 use thirtyfour::prelude::*;
+use which::which;
 
 pub struct WebDriverSession {
     pub driver: WebDriver,
@@ -11,8 +12,9 @@ pub struct WebDriverSession {
 impl WebDriverSession {
     pub async fn new(webdriver_url: &str) -> Result<Self> {
         // Attempt ChromeDriver start
+        let chromedriver_path = which("chromedriver")?;
         let chromedriver_process = if webdriver_url.contains("localhost") {
-            let process = Command::new("chomedriver")
+            let process = Command::new(chromedriver_path)
                 .args(&["--port=4444"])
                 .spawn()
                 .ok();
@@ -39,11 +41,17 @@ impl WebDriverSession {
         })
     }
 
+    pub async fn navigate(&self, base_url: &str) -> Result<()> {
+        self.driver.goto(base_url).await?;
+        
+        Ok(())
+    }
+
     pub async fn close(mut self) -> Result<()> {
         // Quit WebDriver
         self.driver.quit().await?;
 
-        // Stop ChromeDriver provess if we started it
+        // Stop ChromeDriver process if we started it
         if let Some(mut process) = self.chromedriver_process.take() {
             let _ = process.kill();
         }

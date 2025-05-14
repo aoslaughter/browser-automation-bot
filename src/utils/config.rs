@@ -9,7 +9,7 @@ pub struct Config {
     pub user: UserConfig,
     pub search: SearchConfig,
     pub reservation: ReservationConfig,
-    pub site_config: SiteConfig,
+    pub site: SiteConfig,
     pub home_dom: HomeDomConfig,
 }
 
@@ -26,7 +26,7 @@ pub struct SearchConfig {
 
 #[derive(Deserialize)]
 pub struct ReservationConfig {
-    pub weeks: i8,
+    pub weeks: String,
     pub time: String,
 }
 
@@ -39,6 +39,7 @@ pub struct SiteConfig {
 pub struct HomeDomConfig {
     pub form_element: String,
     pub location_element: String,
+    pub date_element: String,
     pub submit_element: String,
 }
 

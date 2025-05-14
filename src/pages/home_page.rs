@@ -1,6 +1,5 @@
 use anyhow::Result;
 use thirtyfour::prelude::*;
-use crate::utils::sites::SiteConfig;
 
 pub struct HomePage {
     driver: WebDriver,
@@ -29,9 +28,9 @@ impl HomePage {
         date: &str,
         submit_css: &str,
     ) -> Result<()> {
-        self.search_by_zipcode(zip_id, zipcode);
-        self.input_date(date_id, date);
-        self.submit(submit_css);
+        self.search_by_zipcode(zip_id, zipcode).await?;
+        self.input_date(date_id, date).await?;
+        self.submit(submit_css).await?;
 
         Ok(())
     }

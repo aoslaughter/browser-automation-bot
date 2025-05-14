@@ -1,3 +1,6 @@
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+
 use anyhow::Result;
 use bot_core::{
     driver::WebDriverSession,
@@ -8,23 +11,49 @@ use std::error::Error;
 use std::time::Duration;
 use thirtyfour::prelude::*;
 use tokio;
+use chrono::{Local, Datelike, TimeDelta};
 
 #[tokio::main]
 async fn main() -> Result<()> {
     // Load configuration
-    let config = Config::from_file("config/config.toml");
+    let config = Config::from_file("config/config.toml").unwrap();
 
     // Initialize WebDriver
-    let session = WebDriverSession::new(&config.unwrap().webdriver_url).await?;
-    let form_elem = &config.unwrap().home_dom.form_element;
-    let form_element = session
-        .driver
-        .find(By::Css(form_elem)).await?;
+    let session = WebDriverSession::new(&config.webdriver_url).await?;
+    session.navigate(&config.site.base_url).await?;
+
+    let form_elem = &config.home_dom.form_element;
+    // let form_element = session
+    //     .driver
+    //     .find(By::Css(form_elem)).await?;
+
+    println!("Successful form element load");
 
     let home_page = HomePage::new(
         session.driver.clone(),
-        form_element
+        session
+        .driver
+        .find(By::Css(form_elem)).await?
     );
+
+    // home_page.navigate(&config.site.base_url).await?;
+
+    let today = Local::now();
+    let weeks = config.reservation.weeks
+        .parse::<i64>()
+        .unwrap();
+    let weeks_delta = TimeDelta::weeks(weeks);
+    let target_date = today + weeks_delta;
+    let target_date = target_date.format("%Y-%m-%d").to_string();
+
+    home_page.search_by_params(
+        &config.home_dom.location_element,
+        &config.search.zipcode,
+        &config.home_dom.date_element,
+        &target_date,
+        &config.home_dom.submit_element
+    ).await?;
+
 
     // let caps = DesiredCapabilities::chrome();
     // let driver = WebDriver::new("http://Localhost:41605", caps).await?;
@@ -59,6 +88,8 @@ async fn main() -> Result<()> {
 
     // Explicitly close the browser.
     // driver.quit().await?;
+
+    session.close().await?;
 
     Ok(())
 }
