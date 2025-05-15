@@ -22,21 +22,11 @@ async fn main() -> Result<()> {
     let session = WebDriverSession::new(&config.webdriver_url).await?;
     session.navigate(&config.site.base_url).await?;
 
-    let form_elem = &config.home_dom.form_element;
-    // let form_element = session
-    //     .driver
-    //     .find(By::Css(form_elem)).await?;
-
-    println!("Successful form element load");
+    // let form_elem = &config.home_dom.form_element;
 
     let home_page = HomePage::new(
         session.driver.clone(),
-        session
-        .driver
-        .find(By::Css(form_elem)).await?
     );
-
-    // home_page.navigate(&config.site.base_url).await?;
 
     let today = Local::now();
     let weeks = config.reservation.weeks
@@ -84,7 +74,7 @@ async fn main() -> Result<()> {
     // assert_eq!(driver.title().await?, "title");
 
     // Wait for page to load
-    // tokio::time::sleep(Duration::from_secs(5)).await;
+    tokio::time::sleep(Duration::from_secs(2)).await;
 
     // Explicitly close the browser.
     // driver.quit().await?;
