@@ -7,8 +7,9 @@ use bot_core::{
     utils::config::Config,
     pages::home_page::HomePage,
 };
-use std::error::Error;
+use std::{error::Error, hash::Hash};
 use std::time::Duration;
+use std::collections::HashMap;
 use thirtyfour::prelude::*;
 use tokio;
 use chrono::{Local, Datelike, TimeDelta};
@@ -36,11 +37,16 @@ async fn main() -> Result<()> {
     let target_date = today + weeks_delta;
     let target_date = target_date.format("%Y-%m-%d").to_string();
 
+    let config_ser = serde_json::to_value(&config).unwrap();
+
+    let params = config.to_search_params();
+
     home_page.search_by_params(
         &config.home_dom.location_element,
-        &config.search.zipcode,
+        &config.search.location,
         &config.home_dom.date_element,
         &target_date,
+        &config.home_dom.date_picker,
         &config.home_dom.submit_element
     ).await?;
 

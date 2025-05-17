@@ -28,10 +28,11 @@ impl HomePage {
         zipcode: &str,
         date_id: &str, 
         date: &str,
+        date_picker: &str,
         submit_css: &str,
     ) -> Result<()> {
         self.search_by_zipcode(zip_id, zipcode).await?;
-        self.input_date(date_id, date).await?;
+        self.input_date(date_id, date, date_picker).await?;
         self.submit(submit_css).await?;
 
         Ok(())
@@ -58,11 +59,21 @@ impl HomePage {
 
         search_input.clear().await?;
         search_input.send_keys(zipcode).await?;
+        tokio::time::sleep(Duration::from_millis(350)).await;
+        search_input.send_keys(Key::Enter).await?;
 
         Ok(())
     }
 
-    async fn input_date(&self, date_id: &str, date: &str) -> Result<()> {
+    async fn input_date(
+        &self, date_id: &str, date: &str, date_picker: &str
+    ) -> Result<()> {
+        // Parse date string
+        let date_parts: Vec<&str> = date.split('-').collect();
+        let _year: u32 = date_parts[0].parse()?;
+        let _month: u32 = date_parts[1].parse()?;
+        let day: u32 = date_parts[2].parse()?;
+
         // Find date field, search_friendly_date
         let date_input = self.driver.find(By::Id(date_id)).await?;
 
@@ -70,6 +81,19 @@ impl HomePage {
             .wait(Duration::from_secs(10), Duration::from_millis(500))
             .conditions(element_is_interactable())
             .await?;
+
+        date_input.click().await?;
+
+        // Find date picker
+        let date_picker = self.driver.find(By::Css(date_picker)).await?;
+
+        date_picker.wait_until()
+            .wait(Duration::from_secs(10), Duration::from_millis(500))
+            .conditions(element_is_interactable())
+            .await?;
+
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        select_from_datepicker(date_picker, day).await?;
 
         // Logging to see element state
         println!(
@@ -81,9 +105,11 @@ impl HomePage {
             date_input.is_enabled().await
         );
 
+        println!("Target Date: {}", date);
+
         // Send date, wait, and escape to close date picker
         date_input.send_keys(date).await?;
-        tokio::time::sleep(Duration::from_millis(300)).await;
+        tokio::time::sleep(Duration::from_millis(350)).await;
         date_input.send_keys(Key::Enter).await?;
 
 

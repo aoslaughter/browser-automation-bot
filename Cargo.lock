@@ -109,6 +109,7 @@ dependencies = [
  "thirtyfour",
  "tokio",
  "toml",
+ "url",
  "which",
 ]
 
