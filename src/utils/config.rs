@@ -27,6 +27,7 @@ pub struct SearchConfig {
     #[serde(flatten)]
     pub location: String,
     pub date: String,
+    pub time: String,
     pub sport: String,
     pub commit: String,
     pub utf8: String,
@@ -91,5 +92,13 @@ impl Config {
         }
 
         url_params
+    }
+
+    pub fn set_date(&mut self, date: String) {
+        self.search.date = date;
+    }
+
+    pub fn set_time(&mut self, time: String) {
+        self.search.time = time;
     }
 }
